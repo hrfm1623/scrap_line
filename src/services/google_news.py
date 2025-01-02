@@ -21,6 +21,16 @@ from config.settings import (
 )
 from services.sentiment import SentimentAnalyzer
 
+# 追加の除外パターン
+ADDITIONAL_IRRELEVANT_PATTERNS = [
+    r'\d{4}年',  # 古い年号への言及
+    r'更新日',   # 更新情報
+    r'アーカイブ',
+    r'過去の記事',
+    r'まとめ記事',
+    r'ランキング',
+    r'(?:月|日)曜日',  # 曜日表記（一般的な記事タイトルでは避けたい）
+]
 
 class GoogleNewsScraper:
     """Google News スクレイピングクラスです.
@@ -97,15 +107,52 @@ class GoogleNewsScraper:
             bool: 関連性があればTrue
         """
         # 設定された除外パターンを使用
-        for pattern in IRRELEVANT_PATTERNS:
+        for pattern in IRRELEVANT_PATTERNS + ADDITIONAL_IRRELEVANT_PATTERNS:
             if re.search(pattern, text):
                 return False
         
         # 最小文字数チェック
         if len(text) < MIN_CONTENT_LENGTH:
             return False
+
+        # 記事の質をチェック
+        if self._has_poor_quality_indicators(text):
+            return False
             
         return True
+
+    def _has_poor_quality_indicators(self, text: str) -> bool:
+        """記事の質が低いかどうかをチェックします.
+
+        Args:
+            text: チェックする文字列
+
+        Returns:
+            bool: 質が低いと判断された場合True
+        """
+        # 質の低い記事の特徴
+        poor_quality_indicators = [
+            r'クリック(?:して|により)',  # クリックベイト
+            r'(?:詳しくは|続きは)こちら',  # 誘導文
+            r'お得な?(?:情報|ニュース)',
+            r'速報',  # 速報系は避ける（質が低いことが多い）
+            r'まとめ',
+            r'\[\s*PR\s*\]',  # PRマーク
+            r'提供：',
+            r'コラボ(?:レーション)?',
+            r'タイアップ',
+        ]
+        
+        for pattern in poor_quality_indicators:
+            if re.search(pattern, text):
+                return True
+
+        # 文章の質をチェック
+        sentences = re.split(r'[。！？]', text)
+        if any(len(s.strip()) < 10 for s in sentences if s.strip()):  # 極端に短い文がある
+            return True
+
+        return False
 
     def search_news(
         self, query: str, max_results: int = MAX_RESULTS_PER_QUERY
@@ -131,11 +178,12 @@ class GoogleNewsScraper:
         processed_urls = set()  # 重複チェック用
         
         try:
-            # 現在時刻から24時間前までの期間を設定
+            # 現在時刻から12時間前までの期間を設定（24時間から12時間に短縮）
             end_date = datetime.now()
-            start_date = end_date - timedelta(days=1)
+            start_date = end_date - timedelta(hours=12)
             
             # ニュースの検索を実行
+            self.gnews.period = '12h'  # 検索期間を12時間に設定
             search_results = self.gnews.get_news(query)
             self.query_count += 1  # API呼び出し回数をインクリメント
             
@@ -177,14 +225,15 @@ class GoogleNewsScraper:
                 
                 # ポジティブなニュースのみをフィルタリング
                 combined_text = f"{title} {description} {content}"
-                if self.sentiment_analyzer.is_positive(combined_text):
+                sentiment_score = self.sentiment_analyzer.analyze(combined_text)
+                if sentiment_score > 0.6:  # より厳密なポジティブ判定（スコアが0.6以上）
                     news_items.append({
                         'title': title,
                         'link': url,
                         'snippet': description,
                         'content': content,
                         'published_at': pub_date.isoformat(),
-                        'sentiment': 'ポジティブ',
+                        'sentiment_score': sentiment_score,
                         'publisher': item.get('publisher', {}).get('title', '不明')
                     })
                     processed_urls.add(url)
