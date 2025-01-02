@@ -11,8 +11,7 @@ mkdir -p lambda_package
 # 依存関係のインストール
 echo "依存関係をインストール中..."
 pip install --target lambda_package \
-    google-api-python-client==2.108.0 \
-    google-api-python-client-stubs==1.19.0 \
+    google-api-python-client==2.47.0 \
     google-auth-httplib2==0.2.0 \
     google-auth-oauthlib==1.2.0 \
     cachetools==5.3.2 \

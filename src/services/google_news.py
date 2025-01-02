@@ -28,7 +28,7 @@ class GoogleNewsScraper:
 
         Google News APIクライアントと感情分析器を設定します.
         """
-        self.service = build("customsearch", "v1", developerKey=GOOGLE_API_KEY)
+        self.service = build("customsearch", "v1", developerKey=GOOGLE_API_KEY, cache_discovery=False)
         self.search_engine_id = SEARCH_ENGINE_ID
         self.sentiment_analyzer = SentimentAnalyzer()
         self.query_count = 0
