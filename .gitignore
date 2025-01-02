@@ -1,12 +1,10 @@
-# Environment variables
-.env
-
 # Python
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
 .Python
+env/
 build/
 develop-eggs/
 dist/
@@ -18,15 +16,17 @@ lib64/
 parts/
 sdist/
 var/
-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
 
+# Lambda package
+lambda_package/
+lambda_deployment_package.zip
+
 # Virtual Environment
 venv/
-env/
-ENV/
+.env
 
 # IDE
 .idea/
