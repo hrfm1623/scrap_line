@@ -3,7 +3,7 @@
 import re
 import time
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 from bs4 import BeautifulSoup
 from gnews import GNews
@@ -17,6 +17,8 @@ from config.settings import (
     REQUEST_TIMEOUT,
     IRRELEVANT_PATTERNS,
     GNEWS_API_KEY,
+    MAX_QUERIES_PER_EXECUTION,
+    PRIORITIZED_SEARCH_QUERIES,
 )
 from services.sentiment import SentimentAnalyzer
 
@@ -49,6 +51,7 @@ class GoogleNewsScraper:
         self.session.headers.update({
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
         })
+        self.query_count = 0  # API呼び出し回数のカウンター
 
     def _extract_article_content(self, url: str) -> Optional[str]:
         """記事の本文を抽出します.
@@ -120,7 +123,15 @@ class GoogleNewsScraper:
 
         Returns:
             List[Dict[str, str]]: 検索結果の記事リスト
+
+        Raises:
+            ValueError: API呼び出し回数が制限を超えた場合
         """
+        # API制限のチェック
+        if self.query_count >= MAX_QUERIES_PER_EXECUTION:
+            print(f"API呼び出し回数が制限({MAX_QUERIES_PER_EXECUTION})を超えました。スキップします。")
+            return []
+
         news_items: List[Dict[str, str]] = []
         processed_urls = set()  # 重複チェック用
         
@@ -131,6 +142,7 @@ class GoogleNewsScraper:
             
             # ニュースの検索を実行
             search_results = self.gnews.get_news(query)
+            self.query_count += 1  # API呼び出し回数をインクリメント
             
             # APIレート制限を考慮した待機
             time.sleep(DELAY_BETWEEN_QUERIES)
@@ -186,3 +198,28 @@ class GoogleNewsScraper:
             print(f"ニュース検索中にエラーが発生しました: {str(e)}")
             
         return news_items
+
+    def search_all_news(self) -> List[Dict[str, str]]:
+        """すべての検索キーワードに対してニュース検索を実行します.
+
+        優先度の高いキーワードから順に実行し、API制限に達した場合は
+        低優先度のキーワードをスキップします。
+
+        Returns:
+            List[Dict[str, str]]: 検索結果の記事リスト
+        """
+        all_news: List[Dict[str, str]] = []
+        
+        # 優先度でソート（優先度の低い数字が高優先）
+        sorted_queries = sorted(PRIORITIZED_SEARCH_QUERIES, key=lambda x: x[1])
+        
+        for query, priority in sorted_queries:
+            if self.query_count >= MAX_QUERIES_PER_EXECUTION:
+                print(f"優先度{priority}のクエリ「{query}」はAPI制限により実行をスキップします。")
+                continue
+                
+            print(f"優先度{priority}のクエリ「{query}」を実行します。")
+            news_items = self.search_news(query)
+            all_news.extend(news_items)
+        
+        return all_news
