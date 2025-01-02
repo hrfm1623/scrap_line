@@ -11,17 +11,11 @@ mkdir -p lambda_package
 # 依存関係のインストール
 echo "依存関係をインストール中..."
 pip install --target lambda_package --verbose \
-    google-api-python-client==2.47.0 \
-    google-auth-httplib2==0.2.0 \
-    google-auth-oauthlib==1.2.0 \
-    google-auth==2.22.0 \
-    google-api-core==2.11.1 \
-    cachetools==5.3.2 \
-    requests==2.31.0 \
-    "urllib3<2.0.0" \
     notion-client==2.1.0 \
     janome==0.5.0 \
     beautifulsoup4==4.9.3 \
+    requests==2.26.0 \
+    "urllib3<2.0.0" \
     gnews==0.3.6
 
 # インストール結果の確認
