@@ -5,10 +5,7 @@ from datetime import datetime
 from typing import Dict, List
 
 from googleapiclient.discovery import build
-from janome.tokenizer import Tokenizer
 from notion_client import Client
-import nltk
-from nltk.sentiment import SentimentIntensityAnalyzer
 
 from config.settings import (
     DELAY_BETWEEN_QUERIES,
@@ -16,10 +13,10 @@ from config.settings import (
     MAX_RESULTS_PER_QUERY,
     NOTION_API_KEY,
     NOTION_DATABASE_ID,
-    POSITIVE_WORDS,
     QUERIES_PER_KEYWORD,
     SEARCH_ENGINE_ID,
 )
+from services.sentiment import SentimentAnalyzer
 
 
 class NewsScraperConfig:
@@ -44,44 +41,6 @@ class NewsScraperConfig:
             ]
         ):
             raise ValueError("必要な環境変数が設定されていません。")
-
-
-class SentimentAnalyzer:
-    """感情分析クラスです.
-
-    テキストの感情分析を行い、ポジティブな内容かどうかを判定します。
-    """
-
-    def __init__(self) -> None:
-        """感情分析器を初期化します."""
-        self.tokenizer = Tokenizer()
-        self.positive_words = POSITIVE_WORDS
-        try:
-            self.sia = SentimentIntensityAnalyzer()
-        except LookupError:
-            # 必要なデータがない場合はダウンロード
-            nltk.download('vader_lexicon')
-            self.sia = SentimentIntensityAnalyzer()
-
-    def is_positive(self, text: str) -> bool:
-        """テキストがポジティブかどうかを判定します.
-
-        Args:
-            text: 分析対象のテキスト
-
-        Returns:
-            bool: ポジティブな内容の場合はTrue
-        """
-        # 日本語の形態素解析
-        tokens = [token.surface for token in self.tokenizer.tokenize(text)]
-        positive_count = sum(1 for token in tokens if token in self.positive_words)
-
-        # 英語の感情分析
-        scores = self.sia.polarity_scores(text)
-        sentiment_score = scores['compound']  # -1.0 to 1.0
-
-        # 日本語でポジティブワードを含むか、英語でポジティブな感情値を持つ場合
-        return positive_count > 0 or sentiment_score > 0.0
 
 
 class GoogleNewsScraper:
