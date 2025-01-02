@@ -35,15 +35,11 @@ class GoogleNewsScraper:
 
         GNewsクライアントと感情分析器を設定します.
         """
-        if not GNEWS_API_KEY:
-            raise ValueError("GNews APIキーが設定されていません。")
-
         self.gnews = GNews(
             language='ja',
             country='JP',
             period='1d',  # 過去24時間のニュースを取得
-            max_results=MAX_RESULTS_PER_QUERY,
-            api_key=GNEWS_API_KEY  # APIキーを設定
+            max_results=MAX_RESULTS_PER_QUERY
         )
         self.sentiment_analyzer = SentimentAnalyzer()
         self.session = requests.Session()

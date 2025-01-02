@@ -11,9 +11,6 @@ import os
 import sys
 from typing import List, Tuple
 
-# GNews API設定
-GNEWS_API_KEY = os.getenv("GNEWS_API_KEY", "")
-
 # GNewsの制限に関する定数
 DAILY_QUERY_LIMIT = 100  # GNewsの1日あたりの最大クエリ数
 MAX_RESULTS_PER_QUERY = 10  # 1回の検索で取得する最大記事数
