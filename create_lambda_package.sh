@@ -20,7 +20,11 @@ pip install --target lambda_package \
     notion-client==2.1.0 \
     textblob==0.17.1 \
     janome==0.5.0 \
-    regex==2023.12.25
+    nltk==3.8.1
+
+# NLTKのデータをダウンロード
+echo "NLTKデータをダウンロード中..."
+python -m nltk.downloader -d lambda_package/nltk_data punkt averaged_perceptron_tagger
 
 # ソースコードのコピー
 echo "ソースコードをコピー中..."
