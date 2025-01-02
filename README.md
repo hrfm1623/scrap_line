@@ -11,11 +11,18 @@ Google News から記事をスクレイピングし、Notion データベース�
 
 ### 主要なライブラリ
 
-- google-api-python-client: Google Custom Search API クライアント
-- notion-client: Notion API クライアント
-- janome: 日本語形態素解析
-- nltk: 自然言語処理と感情分析
-- python-dotenv: 環境変数管理
+- google-api-python-client (v2.47.0): Google Custom Search API クライアント
+- notion-client (v2.1.0): Notion API クライアント
+- janome (v0.5.0): 日本語形態素解析
+- python-dotenv (v1.0.0): 環境変数管理
+
+### 開発ツール
+
+- black (v23.7.0): コードフォーマッター
+- flake8 (v6.1.0): リンター
+- mypy (v1.5.1): 静的型チェッカー
+- isort (v5.12.0): インポート文の整理
+- pre-commit (v3.3.3): Git フック管理
 
 ### インフラストラクチャ
 
