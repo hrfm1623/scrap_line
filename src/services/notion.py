@@ -33,7 +33,7 @@ class NotionClient:
                 self.client.pages.create(
                     parent={"database_id": self.database_id},
                     properties={
-                        "Title": {"title": [{"text": {"content": item["title"]}}]},
+                        "Title": {"rich_text": [{"text": {"content": item["title"]}}]},
                         "URL": {"url": item["link"]},
                         "Description": {"rich_text": [{"text": {"content": item["snippet"]}}]},
                         "PublishedAt": {"date": {"start": item["published_at"]}},

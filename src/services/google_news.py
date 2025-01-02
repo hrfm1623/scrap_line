@@ -1,10 +1,11 @@
 """Google News APIを使用してニュース記事を検索するモジュール."""
 
+import os
 import time
 from datetime import datetime
 from typing import Dict, List
 
-from googleapiclient.discovery import build
+from googleapiclient import discovery
 
 from config.settings import (
     DELAY_BETWEEN_QUERIES,
@@ -28,7 +29,17 @@ class GoogleNewsScraper:
 
         Google News APIクライアントと感情分析器を設定します.
         """
-        self.service = build("customsearch", "v1", developerKey=GOOGLE_API_KEY, cache_discovery=False)
+        # Google API Clientのキャッシュを無効化
+        os.environ['GOOGLE_API_USE_DISCOVERY_CACHE'] = 'false'
+        
+        # discoveryクライアントを使用
+        self.service = discovery.build(
+            "customsearch",
+            "v1",
+            developerKey=GOOGLE_API_KEY,
+            cache_discovery=False,
+            static_discovery=True
+        )
         self.search_engine_id = SEARCH_ENGINE_ID
         self.sentiment_analyzer = SentimentAnalyzer()
         self.query_count = 0
