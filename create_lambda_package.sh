@@ -19,7 +19,8 @@ pip install --target lambda_package \
     "urllib3<2.0.0" \
     notion-client==2.1.0 \
     textblob==0.17.1 \
-    janome==0.5.0
+    janome==0.5.0 \
+    regex==2023.12.25
 
 # ソースコードのコピー
 echo "ソースコードをコピー中..."
