@@ -1,18 +1,22 @@
-"""Google News APIを使用してニュース記事を検索するモジュール."""
+"""Google Newsからニュース記事を取得するモジュール."""
 
-import os
+import re
 import time
-from datetime import datetime
-from typing import Dict, List
+from datetime import datetime, timedelta
+from typing import Dict, List, Optional
 
-from googleapiclient import discovery
+from bs4 import BeautifulSoup
+from gnews import GNews
+import requests
 
 from config.settings import (
-    DELAY_BETWEEN_QUERIES,
-    GOOGLE_API_KEY,
     MAX_RESULTS_PER_QUERY,
-    QUERIES_PER_KEYWORD,
-    SEARCH_ENGINE_ID,
+    DELAY_BETWEEN_QUERIES,
+    MIN_CONTENT_LENGTH,
+    MAX_CONTENT_LENGTH,
+    REQUEST_TIMEOUT,
+    IRRELEVANT_PATTERNS,
+    GNEWS_API_KEY,
 )
 from services.sentiment import SentimentAnalyzer
 
@@ -20,29 +24,90 @@ from services.sentiment import SentimentAnalyzer
 class GoogleNewsScraper:
     """Google News スクレイピングクラスです.
 
-    Google News APIを使用してニュース記事を検索し、
+    GNewsライブラリを使用してニュース記事を検索し、
     ポジティブな内容の記事のみを抽出します.
     """
 
     def __init__(self) -> None:
         """スクレイパーを初期化します.
 
-        Google News APIクライアントと感情分析器を設定します.
+        GNewsクライアントと感情分析器を設定します.
         """
-        # Google API Clientのキャッシュを無効化
-        os.environ['GOOGLE_API_USE_DISCOVERY_CACHE'] = 'false'
-        
-        # discoveryクライアントを使用
-        self.service = discovery.build(
-            "customsearch",
-            "v1",
-            developerKey=GOOGLE_API_KEY,
-            cache_discovery=False,
-            static_discovery=True
+        if not GNEWS_API_KEY:
+            raise ValueError("GNews APIキーが設定されていません。")
+
+        self.gnews = GNews(
+            language='ja',
+            country='JP',
+            period='1d',  # 過去24時間のニュースを取得
+            max_results=MAX_RESULTS_PER_QUERY,
+            api_key=GNEWS_API_KEY  # APIキーを設定
         )
-        self.search_engine_id = SEARCH_ENGINE_ID
         self.sentiment_analyzer = SentimentAnalyzer()
-        self.query_count = 0
+        self.session = requests.Session()
+        # User-Agentを設定してブロックを回避
+        self.session.headers.update({
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        })
+
+    def _extract_article_content(self, url: str) -> Optional[str]:
+        """記事の本文を抽出します.
+
+        Args:
+            url: 記事のURL
+
+        Returns:
+            Optional[str]: 抽出された本文。抽出失敗時はNone
+        """
+        try:
+            response = self.session.get(url, timeout=REQUEST_TIMEOUT)
+            response.raise_for_status()
+            
+            soup = BeautifulSoup(response.text, 'html.parser')
+            
+            # メタディスクリプションの取得
+            meta_desc = soup.find('meta', {'name': 'description'})
+            if meta_desc and meta_desc.get('content'):
+                return meta_desc.get('content')
+            
+            # 本文の抽出（主要なコンテンツ領域を探す）
+            main_content = soup.find(['article', 'main', 'div'], class_=re.compile(r'(article|content|main|body)'))
+            if main_content:
+                # 不要な要素を削除
+                for tag in main_content.find_all(['script', 'style', 'nav', 'header', 'footer']):
+                    tag.decompose()
+                
+                # テキストを抽出し、整形
+                text = ' '.join(main_content.stripped_strings)
+                # 余分な空白を削除
+                text = re.sub(r'\s+', ' ', text).strip()
+                return text[:MAX_CONTENT_LENGTH]  # 設定された最大文字数まで
+            
+            return None
+            
+        except Exception as e:
+            print(f"記事本文の抽出に失敗しました: {url} - {str(e)}")
+            return None
+
+    def _is_relevant_content(self, text: str) -> bool:
+        """記事の内容が関連性があるかチェックします.
+
+        Args:
+            text: チェックする文字列
+
+        Returns:
+            bool: 関連性があればTrue
+        """
+        # 設定された除外パターンを使用
+        for pattern in IRRELEVANT_PATTERNS:
+            if re.search(pattern, text):
+                return False
+        
+        # 最小文字数チェック
+        if len(text) < MIN_CONTENT_LENGTH:
+            return False
+            
+        return True
 
     def search_news(
         self, query: str, max_results: int = MAX_RESULTS_PER_QUERY
@@ -57,56 +122,67 @@ class GoogleNewsScraper:
             List[Dict[str, str]]: 検索結果の記事リスト
         """
         news_items: List[Dict[str, str]] = []
-        page = 1
-        items_per_page = min(10, max_results)
-
+        processed_urls = set()  # 重複チェック用
+        
         try:
-            while len(news_items) < max_results and page <= QUERIES_PER_KEYWORD:
-                # クエリ数をカウント
-                self.query_count += 1
-
-                # APIレート制限を考慮した待機
-                time.sleep(DELAY_BETWEEN_QUERIES)
-
-                result = (
-                    self.service.cse()
-                    .list(
-                        q=query,
-                        cx=self.search_engine_id,
-                        num=items_per_page,
-                        start=((page - 1) * 10) + 1,
-                        sort="date",  # 最新のニュースを優先
-                    )
-                    .execute()
-                )
-
-                if "items" not in result:
+            # 現在時刻から24時間前までの期間を設定
+            end_date = datetime.now()
+            start_date = end_date - timedelta(days=1)
+            
+            # ニュースの検索を実行
+            search_results = self.gnews.get_news(query)
+            
+            # APIレート制限を考慮した待機
+            time.sleep(DELAY_BETWEEN_QUERIES)
+            
+            for item in search_results:
+                if len(news_items) >= max_results:
                     break
-
-                for item in result["items"]:
-                    if len(news_items) >= max_results:
-                        break
-
-                    title = item.get("title", "")
-                    snippet = item.get("snippet", "")
-
-                    # ポジティブなニュースのみをフィルタリング
-                    if self.sentiment_analyzer.is_positive(
-                        title
-                    ) or self.sentiment_analyzer.is_positive(snippet):
-                        news_items.append(
-                            {
-                                "title": title,
-                                "link": item.get("link", ""),
-                                "snippet": snippet,
-                                "published_at": datetime.now().isoformat(),
-                                "sentiment": "ポジティブ",
-                            }
-                        )
-
-                page += 1
-
+                
+                url = item.get('link', '')
+                # URLが既に処理済みの場合はスキップ
+                if not url or url in processed_urls:
+                    continue
+                    
+                title = item.get('title', '')
+                description = item.get('description', '')
+                published_date = item.get('published date')
+                
+                # 記事本文を取得
+                content = self._extract_article_content(url)
+                if not content:
+                    continue
+                
+                # 内容の関連性チェック
+                if not self._is_relevant_content(content):
+                    continue
+                
+                # 日付のバリデーション
+                try:
+                    if published_date:
+                        pub_date = datetime.strptime(published_date, '%a, %d %b %Y %H:%M:%S GMT')
+                        if not (start_date <= pub_date <= end_date):
+                            continue
+                    else:
+                        continue
+                except ValueError:
+                    continue
+                
+                # ポジティブなニュースのみをフィルタリング
+                combined_text = f"{title} {description} {content}"
+                if self.sentiment_analyzer.is_positive(combined_text):
+                    news_items.append({
+                        'title': title,
+                        'link': url,
+                        'snippet': description,
+                        'content': content,
+                        'published_at': pub_date.isoformat(),
+                        'sentiment': 'ポジティブ',
+                        'publisher': item.get('publisher', {}).get('title', '不明')
+                    })
+                    processed_urls.add(url)
+            
         except Exception as e:
             print(f"ニュース検索中にエラーが発生しました: {str(e)}")
-
+            
         return news_items

@@ -5,5 +5,8 @@ google-auth==2.22.0
 google-api-core==2.11.1
 cachetools==5.3.2
 notion-client==2.1.0
-python-dotenv==1.0.0
+python-dotenv==0.19.0
 janome==0.5.0
+gnews==0.3.6
+beautifulsoup4==4.9.3
+requests==2.26.0
