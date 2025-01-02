@@ -5,8 +5,9 @@
   "scripts": {
     "create:package": "chmod +x create_lambda_package.sh && ./create_lambda_package.sh",
     "deploy:package": "aws lambda update-function-code --function-name google_news_scraper --zip-file fileb://lambda_deployment_package.zip",
+    "wait:update": "aws lambda wait function-updated --function-name google_news_scraper",
     "deploy:config": "aws lambda update-function-configuration --function-name google_news_scraper --handler lambda_handler.lambda_handler",
-    "deploy": "npm run create:package && npm run deploy:package && npm run deploy:config",
+    "deploy": "npm run create:package && npm run deploy:package && npm run wait:update && npm run deploy:config && npm run wait:update",
     "clean": "rm -rf lambda_package lambda_deployment_package.zip",
     "test:lambda": "aws lambda invoke --function-name google_news_scraper --payload '{}' response.json && cat response.json"
   },
