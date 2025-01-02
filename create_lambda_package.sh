@@ -18,13 +18,12 @@ pip install --target lambda_package \
     requests==2.31.0 \
     "urllib3<2.0.0" \
     notion-client==2.1.0 \
-    textblob==0.17.1 \
     janome==0.5.0 \
     nltk==3.8.1
 
 # NLTKのデータをダウンロード
 echo "NLTKデータをダウンロード中..."
-python -m nltk.downloader -d lambda_package/nltk_data punkt averaged_perceptron_tagger
+python -m nltk.downloader -d lambda_package/nltk_data vader_lexicon
 
 # ソースコードのコピー
 echo "ソースコードをコピー中..."

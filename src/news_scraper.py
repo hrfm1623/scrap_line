@@ -7,7 +7,8 @@ from typing import Dict, List
 from googleapiclient.discovery import build
 from janome.tokenizer import Tokenizer
 from notion_client import Client
-from textblob import TextBlob
+import nltk
+from nltk.sentiment import SentimentIntensityAnalyzer
 
 from config.settings import (
     DELAY_BETWEEN_QUERIES,
@@ -55,6 +56,12 @@ class SentimentAnalyzer:
         """感情分析器を初期化します."""
         self.tokenizer = Tokenizer()
         self.positive_words = POSITIVE_WORDS
+        try:
+            self.sia = SentimentIntensityAnalyzer()
+        except LookupError:
+            # 必要なデータがない場合はダウンロード
+            nltk.download('vader_lexicon')
+            self.sia = SentimentIntensityAnalyzer()
 
     def is_positive(self, text: str) -> bool:
         """テキストがポジティブかどうかを判定します.
@@ -70,11 +77,11 @@ class SentimentAnalyzer:
         positive_count = sum(1 for token in tokens if token in self.positive_words)
 
         # 英語の感情分析
-        blob = TextBlob(text)
-        sentiment_score = blob.sentiment.polarity
+        scores = self.sia.polarity_scores(text)
+        sentiment_score = scores['compound']  # -1.0 to 1.0
 
         # 日本語でポジティブワードを含むか、英語でポジティブな感情値を持つ場合
-        return positive_count > 0 or sentiment_score > 0
+        return positive_count > 0 or sentiment_score > 0.0
 
 
 class GoogleNewsScraper:
