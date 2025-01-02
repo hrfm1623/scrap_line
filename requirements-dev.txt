@@ -1,0 +1,14 @@
+-r requirements.txt
+
+# Linting and formatting
+black==23.7.0
+flake8==6.1.0
+flake8-docstrings==1.7.0
+isort==5.12.0
+mypy==1.5.1
+
+# Type checking
+types-all
+
+# Git hooks
+pre-commit==3.3.3
