@@ -11,6 +11,9 @@ import os
 import sys
 from typing import List, Tuple, Set
 
+# ニュース取得モードの設定
+NEWS_MODE = os.getenv("NEWS_MODE", "trend")  # "trend" または "positive"
+
 # GNewsの制限に関する定数
 DAILY_QUERY_LIMIT = 100  # GNewsの1日あたりの最大クエリ数
 MAX_RESULTS_PER_QUERY = 5  # 1回の検索で取得する最大記事数（質を重視して減らす）
@@ -29,8 +32,28 @@ REQUEST_TIMEOUT = 15  # 記事取得時のタイムアウト（秒）（遅い�
 NOTION_API_KEY = os.getenv("NOTION_API_KEY", "")
 NOTION_DATABASE_ID = os.getenv("NOTION_DATABASE_ID", "")
 
-# 優先度付きの検索キーワード（タプル形式: (キーワード, 優先度)）
-PRIORITIZED_SEARCH_QUERIES: List[Tuple[str, int]] = [
+# トレンド記事用の検索キーワード
+TREND_SEARCH_QUERIES: List[Tuple[str, int]] = [
+    # 一般ニュース
+    ("ニュース 話題", 1),
+    ("最新 トレンド", 1),
+    ("注目 今日", 1),
+    
+    # テクノロジー
+    ("テクノロジー 最新", 2),
+    ("IT ニュース", 2),
+    
+    # ビジネス
+    ("ビジネス 最新", 2),
+    ("経済 ニュース", 2),
+    
+    # エンタメ
+    ("エンターテインメント 話題", 3),
+    ("芸能 ニュース", 3),
+]
+
+# ポジティブ記事用の検索キーワード（既存のものを移動）
+POSITIVE_SEARCH_QUERIES: List[Tuple[str, int]] = [
     # 動物関連（癒し系）- 最優先
     ("動物 赤ちゃん 誕生 話題", 1),
     ("犬 猫 保護 成功 話題", 1),
@@ -52,11 +75,22 @@ PRIORITIZED_SEARCH_QUERIES: List[Tuple[str, int]] = [
     ("音楽 コンサート 感動", 3),
 ]
 
+# モードに応じて使用する検索クエリを選択
+PRIORITIZED_SEARCH_QUERIES = TREND_SEARCH_QUERIES if NEWS_MODE == "trend" else POSITIVE_SEARCH_QUERIES
+
 # 後方互換性のために元のSEARCH_QUERIESも維持
 SEARCH_QUERIES = [query for query, _ in PRIORITIZED_SEARCH_QUERIES]
 
-# 除外キーワード（広告やPR記事の判定に使用）
-IRRELEVANT_PATTERNS = [
+# トレンドモード用の除外パターン（最小限の除外のみ）
+TREND_IRRELEVANT_PATTERNS = [
+    r'広告',
+    r'PR',
+    r'スポンサード',
+    r'プレスリリース',
+]
+
+# ポジティブモード用の除外パターン（既存のものを移動）
+POSITIVE_IRRELEVANT_PATTERNS = [
     # 広告・PR関連
     r'広告',
     r'PR',
@@ -88,6 +122,9 @@ IRRELEVANT_PATTERNS = [
     r'著作権',
 ]
 
+# ポードに応じて使用する除外パターンを選択
+IRRELEVANT_PATTERNS = TREND_IRRELEVANT_PATTERNS if NEWS_MODE == "trend" else POSITIVE_IRRELEVANT_PATTERNS
+
 # ポジティブワードリスト（カテゴリごとに整理）
 POSITIVE_WORDS: Set[str] = {
     # 革新・発展
@@ -116,4 +153,4 @@ POSITIVE_WORDS: Set[str] = {
 }
 
 # 記事の質を判定するための最小スコア（0-1の範囲）
-MIN_SENTIMENT_SCORE = 0.7  # より厳密なポジティブ判定のためのしきい値
+MIN_SENTIMENT_SCORE = 0.7 if NEWS_MODE == "positive" else 0.0  # トレンドモードでは感情分析を無効化

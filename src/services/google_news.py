@@ -18,6 +18,7 @@ from config.settings import (
     IRRELEVANT_PATTERNS,
     MAX_QUERIES_PER_EXECUTION,
     PRIORITIZED_SEARCH_QUERIES,
+    NEWS_MODE,
 )
 from services.sentiment import SentimentAnalyzer
 
@@ -223,20 +224,24 @@ class GoogleNewsScraper:
                 except ValueError:
                     continue
                 
-                # ポジティブなニュースのみをフィルタリング
-                combined_text = f"{title} {description} {content}"
-                sentiment_score = self.sentiment_analyzer.analyze(combined_text)
-                if sentiment_score > 0.6:  # より厳密なポジティブ判定（スコアが0.6以上）
-                    news_items.append({
-                        'title': title,
-                        'link': url,
-                        'snippet': description,
-                        'content': content,
-                        'published_at': pub_date.isoformat(),
-                        'sentiment_score': sentiment_score,
-                        'publisher': item.get('publisher', {}).get('title', '不明')
-                    })
-                    processed_urls.add(url)
+                # トレンドモードの場合は感情分析をスキップ
+                sentiment_score = 1.0  # デフォルト値
+                if NEWS_MODE == "positive":
+                    combined_text = f"{title} {description} {content}"
+                    sentiment_score = self.sentiment_analyzer.analyze(combined_text)
+                    if sentiment_score <= 0.6:  # より厳密なポジティブ判定（スコアが0.6以上）
+                        continue
+
+                news_items.append({
+                    'title': title,
+                    'link': url,
+                    'snippet': description,
+                    'content': content,
+                    'published_at': pub_date.isoformat(),
+                    'sentiment_score': sentiment_score,
+                    'publisher': item.get('publisher', {}).get('title', '不明')
+                })
+                processed_urls.add(url)
             
         except Exception as e:
             print(f"ニュース検索中にエラーが発生しました: {str(e)}")
