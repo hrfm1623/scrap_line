@@ -19,6 +19,7 @@ var/
 *.egg-info/
 .installed.cfg
 *.egg
+response.json
 
 # Lambda package
 lambda_package/

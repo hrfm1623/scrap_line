@@ -8,17 +8,21 @@
 """
 
 import os
+import sys
 
-from dotenv import load_dotenv
-
-# 環境変数の読み込み
-load_dotenv()
+# ローカル環境でのみ.envファイルを読み込む
+if 'AWS_LAMBDA_FUNCTION_NAME' not in os.environ:
+    try:
+        from dotenv import load_dotenv
+        load_dotenv()
+    except ImportError:
+        print("Warning: python-dotenvがインストールされていません。環境変数を直接使用します。")
 
 # API制限に関する定数
 DAILY_QUERY_LIMIT = 75  # 1日の最大クエリ数（無料枠100の75%を使用）
-QUERIES_PER_KEYWORD = 3  # 1つのキーワードあたりの検索回数
-MAX_RESULTS_PER_QUERY = 5  # 1回の検索で取得する記事数
-DELAY_BETWEEN_QUERIES = 2  # クエリ間の待機時間（秒）
+QUERIES_PER_KEYWORD = 2  # 1つのキーワードあたりの検索回数
+MAX_RESULTS_PER_QUERY = 3  # 1回の検索で取得する記事数
+DELAY_BETWEEN_QUERIES = 1  # クエリ間の待機時間（秒）
 
 # API認証情報
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY", "")
@@ -30,23 +34,16 @@ NOTION_DATABASE_ID = os.getenv("NOTION_DATABASE_ID", "")
 SEARCH_QUERIES = [
     # 動物関連
     "動物 癒し",
-    "ペット 話題",
     "犬 猫 かわいい",
-    "動物園 人気",
-    "保護犬 幸せ",
     # 食べ物・グルメ
     "グルメ 話題",
-    "レストラン 人気",
     "スイーツ おいしい",
     # エンタメ・趣味
     "映画 おすすめ",
-    "音楽 話題",
     "アニメ 人気",
-    "ゲーム 楽しい",
     # 日常・ライフスタイル
     "カフェ おしゃれ",
     "旅行 素敵",
-    "公園 きれい",
 ]
 
 # ポジティブワードリスト
