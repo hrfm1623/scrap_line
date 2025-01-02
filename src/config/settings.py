@@ -11,14 +11,6 @@ import os
 import sys
 from typing import List, Tuple
 
-# ローカル環境でのみ.envファイルを読み込む
-if 'AWS_LAMBDA_FUNCTION_NAME' not in os.environ:
-    try:
-        from dotenv import load_dotenv
-        load_dotenv()
-    except ImportError:
-        print("Warning: python-dotenvがインストールされていません。環境変数を直接使用します。")
-
 # GNews API設定
 GNEWS_API_KEY = os.getenv("GNEWS_API_KEY", "")
 

@@ -37,7 +37,6 @@ Google News から記事をスクレイピングし、Notion データベース�
 - notion-client (v2.1.0): Notion API クライアント
 - beautifulsoup4 (v4.9.3): HTML 解析
 - janome (v0.5.0): 日本語形態素解析
-- python-dotenv (v0.19.0): 環境変数管理
 - requests (v2.26.0): HTTP クライアント
 
 ### 開発ツール

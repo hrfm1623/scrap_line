@@ -17,11 +17,12 @@ pip install --target lambda_package --verbose \
     google-auth==2.22.0 \
     google-api-core==2.11.1 \
     cachetools==5.3.2 \
-    python-dotenv==1.0.0 \
     requests==2.31.0 \
     "urllib3<2.0.0" \
     notion-client==2.1.0 \
-    janome==0.5.0
+    janome==0.5.0 \
+    beautifulsoup4==4.9.3 \
+    gnews==0.3.6
 
 # インストール結果の確認
 if [ $? -ne 0 ]; then
