@@ -14,7 +14,7 @@
 
 初期記事はNASAの公式発表を本文まで照合した2件です。紹介文の作成と照合はAI補助で行い、人が確認した日付は未登録です。架空記事6件は `tests/fixtures/` に隔離しています。NASA公式RSSを取得元に設定済みです。8時間ごとのユーザー用systemd設定を用意しています（この作業環境ではユーザーバスに接続できず、タイマーの有効化は未完了）。自動翻訳・LLM要約・自動公開はしません。
 
-公開準備先: https://hare-dayori.pages.dev/ （Cloudflare Pagesプロジェクト: `hare-dayori`、本番ブランチ: `main`）。独自ドメインと運営者情報が未確定のため、まずnoindex付きの先行公開として運用します。表示名は仮称。広告・アクセス解析は追加していません。
+公開URL: https://hare-dayori.pages.dev/ （Cloudflare Pagesプロジェクト: `hare-dayori`、本番ブランチ: `main`）。独自ドメインと運営者情報が未確定のため、まずnoindex付きの先行公開として運用します。表示名は仮称。広告・アクセス解析は追加していません。
 
 ## 起動と検証
 
@@ -180,7 +180,9 @@ npm run verify:live -- https://実際の本番ホスト
 
 ## 先行公開（2026-09-20）
 
-ユーザーの公開依頼に基づき、専用Pagesプロジェクト `hare-dayori` を作成しました。公開先は `https://hare-dayori.pages.dev/`、`main` ブランチの配信です。初回アップロードとHTTP検証の結果は作業完了後に追記します。
+ユーザーの公開依頼に基づき、専用Pagesプロジェクト `hare-dayori` を作成しました。公開先は `https://hare-dayori.pages.dev/`、`main` ブランチの配信です。初回デプロイ完了。デプロイ固有URLは https://46e151ad.hare-dayori.pages.dev 、公開コードのコミットは `52195c0` です。
+
+公開URLでHTTPS・トップページ200・robots.txtの200/text/plain・サイトマップ200・存在しないURLの404を確認しました。HTMLとHTTPヘッダーのnoindex、実記事2件、モバイル表示、カテゴリとキーワード検索、該当なし・条件リセットも検証済みです。非公開候補と架空記事のパスは404でした。Cloudflare管理画面のWAF設定自体は変更していません。
 
 独自ドメイン・運営者情報が未確定の間は `npm run build` の出力を公開し、HTMLとX-Robots-Tagの両方でnoindexを設定します。これは認証ではなく、URLを知っている人は閲覧できます。架空のサンプルと非公開編集候補は配信しません。canonicalと本番サイトマップの登録は、独自ドメインを確定して検索掲載を有効にするときに行います。
 
