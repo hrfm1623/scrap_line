@@ -87,7 +87,7 @@ class EditorialTests(unittest.TestCase):
                 register(dict(self.article, status="pending"), path)
             self.assertEqual(path.read_text(), original)
             register(dict(self.article, reason="掲載理由を再確認しました。"), path)
-            self.assertEqual(len(json.loads(path.read_text())), 2)
+            self.assertEqual(len(json.loads(path.read_text())), len(json.loads(original)))
 
     def test_review_escapes_feed_markup(self):
         with tempfile.TemporaryDirectory() as temp:

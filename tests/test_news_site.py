@@ -89,7 +89,7 @@ class NewsTests(unittest.TestCase):
                 build(empty, temp, "https://example.com", production=True)
 
     def test_live_editorial_data(self):
-        self.assertEqual(len(validate_articles(json.loads((ROOT / "data/articles.json").read_text()))), 2)
+        self.assertGreater(len(validate_articles(json.loads((ROOT / "data/articles.json").read_text()))), 0)
 
     def test_ai_check_is_not_human_check(self):
         self.article["human_checked_at"] = "2026-09-20"

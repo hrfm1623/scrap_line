@@ -92,7 +92,7 @@ npm run register:article -- --file .news-cache/候補ID.json
 
 収集処理の `fetched_at` は取得時刻で、照合・承認ではありません。発表日時が不明なら推測せず保留します。既存の記事に修正がある場合は元記事を再確認し、紹介と照合日を更新します。自動収集では既存候補の内容を上書きしません。サンプル・重複・未来日・必須項目不足・不正URL・対象外語のある公開データではビルドが失敗します。
 
-## Cloudflare Pagesでの公開
+## Cloudflare Pagesでの公開（手動公開の手順）
 
 追加サーバーやDBなしの静的配信を採用します。Pagesプロジェクトと取得済みドメインは運営者が実際の値を設定してください。ドメイン未指定・空記事・架空記事では本番ビルドを停止します。
 
@@ -215,7 +215,7 @@ Python標準HTTPクライアントではCloudflareの403（コード1010）が�
 
 ユーザーの希望により、Cloudflare PagesのGitHub直接連携を採用します。手動アップロードで作成したプロジェクトは後からGit連携に変更できないため、`hare-dayori-git` プロジェクトを新設し、初回ビルドを検証してから独自ドメインを移します。旧プロジェクトは移行完了まで配信を継続します。
 
-設定予定:
+Git連携プロジェクトに設定済み:
 
 - GitHub: `hrfm1623/scrap_line`
 - 本番ブランチ: `main`
@@ -228,3 +228,12 @@ Python標準HTTPクライアントではCloudflareの403（コード1010）が�
 旧Lambda用の `requirements.txt` はWebビルドに不要なので、依存パッケージの自動インストールをスキップします。CloudflareがGitHubから直接ビルドするため、GitHub ActionsにCloudflareトークンを預ける必要はありません。既存Actionsはコード検証専用です。
 
 公式情報: [Direct UploadからGit連携へは変更不可](https://developers.cloudflare.com/pages/get-started/direct-upload/)、[ビルド環境](https://developers.cloudflare.com/pages/configuration/build-image/)。
+
+
+`hare-dayori-git` と GitHub `hrfm1623/scrap_line` の接続は作成済みです。`main` へのpushを契機とする自動ビルド（トリガー `github:push`）を確認しています。新URLは `https://hare-dayori-git.pages.dev/`。独自ドメインは切替準備が整うまで旧 `hare-dayori` プロジェクトに接続したままです。
+
+UTC環境で日本の確認日が未来日扱いになる問題を修正し、編集日の境界を日本時間に統一しました。UTC 14:59:59/15:00:00の境界テストを含む25テストがGitHub Actionsで成功しています。記事数を増やしただけで検証が失敗しないよう、実記事数の固定値による検証も修正しています。
+
+以後の基本運用は、記事・コードを変更→コミット→`git push origin main` です。Cloudflareはテストが成功した場合だけ新しいサイトを配信します。失敗時は既存デプロイを維持します。プレビューブランチもビルドしますが、独自ドメインへの反映はmainのみです。
+
+独自ドメイン移行時にはPagesのドメイン登録を新プロジェクトへ移し、DNSのCNAMEを `hare-dayori-git.pages.dev` に更新します。現行OAuthにはDNS編集権限がないため、編集権限を持つ認証またはユーザーのDNS操作が必要です。切替前に新URLの表示を確認し、旧プロジェクトは削除せず復旧用に保持します。
