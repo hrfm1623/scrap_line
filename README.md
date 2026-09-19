@@ -209,3 +209,22 @@ Python標準HTTPクライアントではCloudflareの403（コード1010）が�
 運営者情報が未確定のためnoindexを維持しています。検索掲載を有効にする段階で、canonical・サイトマップの本番URLと旧ホストからのリダイレクトを揃えます。
 
 接続方式はCloudflare Pagesの[公式カスタムドメイン手順](https://developers.cloudflare.com/pages/configuration/custom-domains/)に従い、Pages登録とCNAMEの両方を使用します。
+
+
+## GitHub直接連携への移行
+
+ユーザーの希望により、Cloudflare PagesのGitHub直接連携を採用します。手動アップロードで作成したプロジェクトは後からGit連携に変更できないため、`hare-dayori-git` プロジェクトを新設し、初回ビルドを検証してから独自ドメインを移します。旧プロジェクトは移行完了まで配信を継続します。
+
+設定予定:
+
+- GitHub: `hrfm1623/scrap_line`
+- 本番ブランチ: `main`
+- ビルド: `npm run build:cloudflare`（テスト→JavaScript構文検証→静的生成）
+- 出力: `dist`、ルート: リポジトリ直下
+- 環境変数: `SKIP_DEPENDENCY_INSTALL=1`、`PYTHON_VERSION=3.12`、`NODE_VERSION=22`
+- 本番・プレビューとも現在のnoindex方針を維持
+- PRコメントの自動投稿は無効
+
+旧Lambda用の `requirements.txt` はWebビルドに不要なので、依存パッケージの自動インストールをスキップします。CloudflareがGitHubから直接ビルドするため、GitHub ActionsにCloudflareトークンを預ける必要はありません。既存Actionsはコード検証専用です。
+
+公式情報: [Direct UploadからGit連携へは変更不可](https://developers.cloudflare.com/pages/get-started/direct-upload/)、[ビルド環境](https://developers.cloudflare.com/pages/configuration/build-image/)。

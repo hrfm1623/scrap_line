@@ -23,7 +23,8 @@
     "register:article": "python3 -m web.editor register",
     "verify:live": "python3 -m web.verify_live",
     "deploy": "python3 -m web.deploy",
-    "deploy:preview": "npm test && npm run build && wrangler pages deploy dist --project-name hare-dayori --branch main"
+    "deploy:preview": "npm test && npm run build && wrangler pages deploy dist --project-name hare-dayori --branch main",
+    "build:cloudflare": "npm test && node --check web/assets/site.js && npm run build"
   },
   "repository": {
     "type": "git",
