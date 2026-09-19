@@ -1,0 +1,36 @@
+[
+  {
+    "id": "xrism-stellar-wind-20260918",
+    "title": "日本主導のXRISM、星から流れるガスの動きを捉える",
+    "summary": "NASAは9月18日、X線天文衛星XRISMのデータから、巨大な星が放つガスが伴星の中性子星へ流れ込む様子を捉えたと発表しました。星の周りで物質がどう動くのか、理解を深める観測成果です。",
+    "category": "science",
+    "source_url": "https://science.nasa.gov/missions/xrism/xrism-sees-pulsar-gathering-companions-wind/",
+    "published_at": "2026-09-18",
+    "reason": "日本主導の観測が、宇宙の仕組みを知る手がかりになった話題です。観測で分かったことの範囲で紹介しています。",
+    "source_name": "NASA（英語）",
+    "checked_at": "2026-09-20",
+    "reviewer": "Codex：公式発表本文との照合",
+    "review_method": "ai_assisted",
+    "human_checked_at": null,
+    "terms_url": "https://www.nasa.gov/nasa-brand-center/images-and-media/",
+    "status": "approved",
+    "is_demo": false
+  },
+  {
+    "id": "observe-moon-night-20260915",
+    "title": "月を見上げる楽しさを世界で。NASAが観望イベントを案内",
+    "summary": "NASAは9月15日、世界の人々と月に親しむ「International Observe the Moon Night」を紹介しました。2026年は9月19日を開催日として案内。観望のほか、工作やアートなどを通じて月を学ぶ取り組みです。開催案内に基づく紹介で、実施結果の報告ではありません。",
+    "category": "culture",
+    "source_url": "https://www.nasa.gov/centers-and-facilities/goddard/celebrate-international-observe-the-moon-night-with-nasa/",
+    "published_at": "2026-09-15",
+    "reason": "身近な月をきっかけに、科学やアートに親しめる取り組みです。発表日と開催予定日を区別して紹介しています。",
+    "source_name": "NASA（英語）",
+    "checked_at": "2026-09-20",
+    "reviewer": "Codex：公式発表本文との照合",
+    "review_method": "ai_assisted",
+    "human_checked_at": null,
+    "terms_url": "https://www.nasa.gov/nasa-brand-center/images-and-media/",
+    "status": "approved",
+    "is_demo": false
+  }
+]

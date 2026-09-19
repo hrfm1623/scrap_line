@@ -1,19 +1,33 @@
 {
-  "name": "google-news-scraper",
+  "name": "hare-dayori",
   "version": "1.0.0",
-  "description": "Google News Scraper Lambda Function",
+  "description": "明るいニュースを短い紹介と出典リンクで届ける静的サイト",
   "scripts": {
     "create:package": "chmod +x create_lambda_package.sh && ./create_lambda_package.sh",
     "deploy:package": "aws lambda update-function-code --function-name google_news_scraper --zip-file fileb://lambda_deployment_package.zip",
     "wait:update": "aws lambda wait function-updated --function-name google_news_scraper",
     "deploy:config": "aws lambda update-function-configuration --function-name google_news_scraper --handler lambda_handler.lambda_handler",
-    "deploy": "npm run create:package && npm run deploy:package && npm run wait:update && npm run deploy:config && npm run wait:update",
     "clean": "rm -rf lambda_package lambda_deployment_package.zip",
-    "test:lambda": "aws lambda invoke --function-name google_news_scraper --payload '{}' response.json && cat response.json"
+    "test:lambda": "aws lambda invoke --function-name google_news_scraper --payload '{}' response.json && cat response.json",
+    "deploy:legacy": "npm run create:package && npm run deploy:package && npm run wait:update && npm run deploy:config && npm run wait:update",
+    "build": "python3 -m web.build",
+    "build:demo": "python3 -m web.build --demo",
+    "build:production": "python3 -m web.build --production",
+    "dev": "npm run build:demo && python3 -m http.server 4173 --bind 127.0.0.1 --directory dist-demo",
+    "preview": "npm run build && python3 -m http.server 4173 --bind 127.0.0.1 --directory dist",
+    "collect": "python3 -m web.collect",
+    "test": "python3 -m unittest discover -s tests -v",
+    "refresh": "python3 -m web.refresh",
+    "review": "python3 -m web.editor review",
+    "draft": "python3 -m web.editor draft",
+    "register:article": "python3 -m web.editor register",
+    "verify:live": "python3 -m web.verify_live",
+    "deploy": "python3 -m web.deploy",
+    "deploy:preview": "npm test && npm run build && wrangler pages deploy dist --project-name hare-dayori --branch main"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/yourusername/google-news-scraper.git"
+    "url": "git+https://github.com/hrfm1623/scrap_line.git"
   },
   "keywords": [
     "aws",

@@ -1,0 +1,14 @@
+[
+  {
+    "id": "nasa-recent",
+    "name": "NASA",
+    "feed_url": "https://www.nasa.gov/feed/",
+    "category": "science",
+    "terms_url": "https://www.nasa.gov/nasa-brand-center/images-and-media/",
+    "terms_checked_at": "2026-09-20",
+    "usage_note": "公式RSSで配信される見出し・リンク・日付を非公開の編集候補として取得。本文・画像は保存せず、公開時は出典付きの独自紹介を作成。第三者素材・ロゴ・推奨を示す表現は使わない。",
+    "discovery_url": "https://www.nasa.gov/rss-feeds/",
+    "robots_url": "https://www.nasa.gov/robots.txt",
+    "enabled": true
+  }
+]

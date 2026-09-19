@@ -1,0 +1,26 @@
+name: ニュースサイト検証
+on:
+  push:
+    paths: ['web/**', 'data/**', 'tests/**', 'scripts/**', 'package.json', '.github/workflows/check.yml']
+  pull_request:
+    paths: ['web/**', 'data/**', 'tests/**', 'scripts/**', 'package.json', '.github/workflows/check.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: news-check-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: テストと静的生成
+        run: |
+          python3 -m unittest discover -s tests -v
+          python3 -m web.build
+          python3 -m web.build --demo
+          node --check web/assets/site.js

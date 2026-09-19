@@ -38,3 +38,7 @@ venv/
 # OS
 .DS_Store
 Thumbs.db
+
+# ニュースサイトの生成物と非公開候補
+dist-demo/
+.news-cache/
