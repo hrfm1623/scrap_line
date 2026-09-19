@@ -14,7 +14,7 @@
 
 初期記事はNASAの公式発表を本文まで照合した2件です。紹介文の作成と照合はAI補助で行い、人が確認した日付は未登録です。架空記事6件は `tests/fixtures/` に隔離しています。NASA公式RSSを取得元に設定済みです。8時間ごとのユーザー用systemd設定を用意しています（この作業環境ではユーザーバスに接続できず、タイマーの有効化は未完了）。自動翻訳・LLM要約・自動公開はしません。
 
-公開URL: https://hare-dayori.pages.dev/ （Cloudflare Pagesプロジェクト: `hare-dayori`、本番ブランチ: `main`）。独自ドメインと運営者情報が未確定のため、まずnoindex付きの先行公開として運用します。表示名は仮称。広告・アクセス解析は追加していません。
+公開URL: https://hare.sirumo.com/ （Cloudflare Pagesプロジェクト: `hare-dayori`、本番ブランチ: `main`）。独自ドメインは接続済みです。運営者情報が未確定のため、noindex付きの先行公開として運用します。表示名は仮称。広告・アクセス解析は追加していません。
 
 ## 起動と検証
 
@@ -174,7 +174,7 @@ npm run verify:live -- https://実際の本番ホスト
 - 実RSSから候補10件の取得・ETag記録・編集一覧生成を確認。
 - 自動テスト24件で取得拒否・304・取得失敗時の保持・下書きと登録・既存機能を確認。
 - systemdの設定構文を検証済み。有効化はユーザーセッション接続待ち。
-- Cloudflare CLIのログインを確認し、専用プロジェクト `hare-dayori` を作成済み。独自ドメイン・運営者名・問い合わせ先は回答待ち。
+- Cloudflare CLIのログインを確認し、専用プロジェクト `hare-dayori` を作成済み。独自ドメイン `hare.sirumo.com` は接続済み。運営者名・問い合わせ先は回答待ち。
 - GitHubへのpushと実環境WAF設定の確認は未実施。先行公開結果は下記を参照。
 
 
@@ -193,7 +193,7 @@ npm run verify:live -- https://実際の本番ホスト
 
 Cloudflareアカウントの有効なゾーン `sirumo.com` を確認し、Pagesプロジェクト `hare-dayori` に `hare.sirumo.com` を登録しました。サブドメインは独立したサービス名に合わせて選定しています。
 
-現在は **pending / CNAME record not set**。Wrangler OAuthにはPages操作権限がありますがDNSレコード操作権限がなく、DNS APIの読み取りは403でした。次のDNSレコード追加が必要です。
+**接続完了（active）**。ユーザーによるDNS設定後、Pagesのドメイン認証と証明書がactiveになりました。Wrangler OAuthにはDNSレコード操作権限がなく、以下の内容をユーザーに設定依頼しました。
 
 | 項目 | 値 |
 | --- | --- |
@@ -202,8 +202,10 @@ Cloudflareアカウントの有効なゾーン `sirumo.com` を確認し、Pages
 | ターゲット | hare-dayori.pages.dev |
 | TTL | 自動 |
 
-DNS設定後にPagesのCustom domainsで `active` になることと、`https://hare.sirumo.com/` のHTTPS 200・記事表示・robots.txt・noindexを確認します。まだDNS解決できず、HTTPSの疎通は未確認です。現在の配信先は引き続き `https://hare-dayori.pages.dev/` です。
+`https://hare.sirumo.com/` のブラウザー検証でHTTPS 200・実記事2件・スマホとPC表示・カテゴリ検索・キーワード検索・条件リセット・robots.txtの200/text/plain・noindexを確認済み。存在しないページと非公開データは404でした。旧URL `https://hare-dayori.pages.dev/` も利用できます。
 
-運営者情報が未確定のためnoindexを維持しています。サブドメインが有効になる前に既存URLをリダイレクトせず、接続確認後に正規URLとホスト単位のリダイレクトを更新します。
+Python標準HTTPクライアントではCloudflareの403（コード1010）が返り、通常のブラウザーとそのHTTPリクエストでは200でした。WAF設定の変更は行っていません。特定の検索ボットの到達性まで確認済みとはしていません。
+
+運営者情報が未確定のためnoindexを維持しています。検索掲載を有効にする段階で、canonical・サイトマップの本番URLと旧ホストからのリダイレクトを揃えます。
 
 接続方式はCloudflare Pagesの[公式カスタムドメイン手順](https://developers.cloudflare.com/pages/configuration/custom-domains/)に従い、Pages登録とCNAMEの両方を使用します。
