@@ -1,7 +1,7 @@
 """公開データを検証する。自動選別は公開承認の代わりにはしない。"""
 
 import re
-from datetime import date
+from datetime import date, datetime, timedelta, timezone
 from urllib.parse import urlsplit
 
 CATEGORIES = {
@@ -28,11 +28,13 @@ def https_url(value):
     return value
 
 
-def valid_date(value):
+def valid_date(value, now=None):
     if not isinstance(value, str) or not re.fullmatch(r"\d{4}-\d{2}-\d{2}", value):
         raise ValueError("日付はYYYY-MM-DDで指定してください")
     parsed = date.fromisoformat(value)
-    if parsed > date.today():
+    # 編集日・確認日は日本時間。UTCのCIでも日付が前日に戻らないようにする。
+    today = (now or datetime.now(timezone.utc)).astimezone(timezone(timedelta(hours=9))).date()
+    if parsed > today:
         raise ValueError("未来の日付は指定できません")
     return parsed
 

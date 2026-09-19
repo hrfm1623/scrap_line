@@ -2,15 +2,25 @@ import copy
 import json
 import tempfile
 import unittest
+from datetime import datetime, timezone
 from pathlib import Path
 from unittest.mock import Mock
 
 from web.build import ROOT, build
 from web.collect import collect, parse_feed
-from web.content import validate_articles
+from web.content import valid_date, validate_articles
 
 
 class NewsTests(unittest.TestCase):
+    def test_editorial_dates_use_japan_midnight(self):
+        before = datetime(2026, 9, 19, 14, 59, 59, tzinfo=timezone.utc)
+        after = datetime(2026, 9, 19, 15, 0, 0, tzinfo=timezone.utc)
+        with self.assertRaises(ValueError):
+            valid_date("2026-09-20", now=before)
+        self.assertEqual(valid_date("2026-09-20", now=after).isoformat(), "2026-09-20")
+        with self.assertRaises(ValueError):
+            valid_date("2026-09-21", now=after)
+
     def setUp(self):
         self.articles = json.loads((ROOT / "tests/fixtures/articles.json").read_text())
         self.article = copy.deepcopy(self.articles[0])
