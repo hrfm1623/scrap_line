@@ -187,3 +187,23 @@ npm run verify:live -- https://実際の本番ホスト
 独自ドメイン・運営者情報が未確定の間は `npm run build` の出力を公開し、HTMLとX-Robots-Tagの両方でnoindexを設定します。これは認証ではなく、URLを知っている人は閲覧できます。架空のサンプルと非公開編集候補は配信しません。canonicalと本番サイトマップの登録は、独自ドメインを確定して検索掲載を有効にするときに行います。
 
 再公開は変更をコミットして `npm run deploy:preview`。独自ドメイン・運営者情報を設定した後の検索掲載用公開は既存の `npm run deploy` を使います。`pages.dev` から独自ドメインへの移行時はホスト単位のリダイレクトも設定してください。
+
+
+## sirumo.com のサブドメイン接続（2026-09-20）
+
+Cloudflareアカウントの有効なゾーン `sirumo.com` を確認し、Pagesプロジェクト `hare-dayori` に `hare.sirumo.com` を登録しました。サブドメインは独立したサービス名に合わせて選定しています。
+
+現在は **pending / CNAME record not set**。Wrangler OAuthにはPages操作権限がありますがDNSレコード操作権限がなく、DNS APIの読み取りは403でした。次のDNSレコード追加が必要です。
+
+| 項目 | 値 |
+| --- | --- |
+| 種類 | CNAME |
+| 名前 | hare |
+| ターゲット | hare-dayori.pages.dev |
+| TTL | 自動 |
+
+DNS設定後にPagesのCustom domainsで `active` になることと、`https://hare.sirumo.com/` のHTTPS 200・記事表示・robots.txt・noindexを確認します。まだDNS解決できず、HTTPSの疎通は未確認です。現在の配信先は引き続き `https://hare-dayori.pages.dev/` です。
+
+運営者情報が未確定のためnoindexを維持しています。サブドメインが有効になる前に既存URLをリダイレクトせず、接続確認後に正規URLとホスト単位のリダイレクトを更新します。
+
+接続方式はCloudflare Pagesの[公式カスタムドメイン手順](https://developers.cloudflare.com/pages/configuration/custom-domains/)に従い、Pages登録とCNAMEの両方を使用します。
